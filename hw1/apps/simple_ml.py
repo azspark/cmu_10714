@@ -97,7 +97,25 @@ def nn_epoch(X, y, W1, W2, lr = 0.1, batch=100):
     """
 
     ### BEGIN YOUR SOLUTION
-    
+    step_num = X.shape[0] // batch
+    if step_num * batch < X.shape[0]:
+        step_num += 1
+    y_types = np.max(y) + 1
+    for b in range(step_num):
+        batch_x = ndl.Tensor(X[b*batch: b*batch + batch])
+        batch_y = y[b*batch: b*batch + batch]
+        logits = ndl.relu(batch_x.matmul(W1)).matmul(W2)
+
+        y_one_hot = np.zeros((batch_y.shape[0], y_types))
+        y_one_hot[np.arange(batch_y.shape[0]), batch_y] = 1
+        y_one_hot = ndl.Tensor(y_one_hot)
+        loss = softmax_loss(logits, y_one_hot)
+        loss.backward()
+
+        new_W1 = ndl.Tensor(W1.numpy() - lr * W1.grad.numpy())
+        new_W2 = ndl.Tensor(W2.numpy() - lr * W2.grad.numpy())
+        W1, W2 = new_W1, new_W2
+    return W1, W2
     ### END YOUR SOLUTION
 
 
